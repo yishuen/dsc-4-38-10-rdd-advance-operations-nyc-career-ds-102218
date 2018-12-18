@@ -24,17 +24,15 @@ In order to demonstrate this behaviour, we shall first generate a a word in sing
 
 ```python
 # Initialize a spark context 
-
-# Code here 
-
+import pyspark
+sc = pyspark.SparkContext('local[*]')
 ```
 
 
 ```python
 # Create a new base RDD from list ['cat', 'elephant', 'rat', 'rat', 'cat'] and paralellize to 4 cores
-
-# Code here 
-
+wordsList = ['cat', 'elephant', 'rat', 'rat', 'cat']
+wordsRDD = sc.parallelize(wordsList, 4)
 ```
 
 We can now create a new RDD by turning these words into plural (adding s to each element) and storing singular and plural values (cat, cats) as a tuple. 
@@ -48,14 +46,11 @@ Consult the spark documentation before attempting this step
 
 ```python
 # Use map transformation on wordsRDD
-
-# Code here 
-
+wordsRDDMap = wordsRDD.map(lambda x: (x, x + 's'))
 
 # View and count the elements
-
-# Code here 
-
+print (wordsRDDMap.collect())
+print (wordsRDDMap.count())
 
 # [('cat', 'cats'), ('elephant', 'elephants'), ('rat', 'rats'), ('rat', 'rats'), ('cat', 'cats')]
 # 5
@@ -68,14 +63,11 @@ Consult the spark documentation before attempting this step
 
 ```python
 # Use flatMap transformation on wordsRDD
-
-# Code here 
-
+wordsRDDfMap = wordsRDD.flatMap(lambda x: (x, x + 's'))
 
 # View and count the elements
-
-# Code here 
-
+print (wordsRDDfMap.collect())
+print (wordsRDDfMap.count())
 
 # ['cat', 'cats', 'elephant', 'elephants', 'rat', 'rats', 'rat', 'rats', 'cat', 'cats']
 # 10
@@ -95,9 +87,8 @@ Let's do another quick comparison for better understanding of this behaviour.
 
 ```python
 # Create a new RDD with ("Roses are red", "Violets are blue") and collect() contents
-
-# Code here 
-
+rdd = sc.parallelize(("Roses are red", "Violets are blue"))
+rdd.collect()
 
 # ['Roses are red', 'Violets are blue']
 ```
@@ -112,9 +103,8 @@ Let's do another quick comparison for better understanding of this behaviour.
 
 ```python
 # Use map to split rdd elements and view the contents
-
-# Code here 
-
+rdd2 = rdd.map(lambda x: x.split(" "))
+rdd2.collect()
 
 # [['Roses', 'are', 'red'], ['Violets', 'are', 'blue']]
 ```
@@ -129,9 +119,8 @@ Let's do another quick comparison for better understanding of this behaviour.
 
 ```python
 # Use flatMap to split elements and view the results
-
-# Code here 
-
+rdd3 = rdd.flatMap(lambda x: x.split(" "))
+rdd3.collect()
 
 # ['Roses', 'are', 'red', 'Violets', 'are', 'blue']
 ```
@@ -169,12 +158,10 @@ Let's go through a simple example to demonstrate the behaviour of both transform
 
 ```python
 # Create a paired RDD with key:value pairs a:1, a:2 and b:1
-
-# Code here 
+pairedRDD = sc.parallelize([('a', 1), ('a', 2), ('b', 1)])
 
 # Use mapValues(0 instead of map() to improve format for printing
-
-# Code here 
+pairedRDD.groupByKey().mapValues(lambda x: list(x)).collect()
 
 # [('b', [1]), ('a', [1, 2])]
 ```
@@ -200,8 +187,7 @@ There are a number of ways to sum by the values that can be used in pySpark. Let
 # Using groupByKey()
 # Using mapValues with lambda function to sum the contents of pairedRDD and .collect() the result
 
-
-# Code here 
+pairedRDD.groupByKey().mapValues(lambda x: sum(x)).collect()
 
 # [('b', 1), ('a', 3)]
 ```
@@ -219,10 +205,7 @@ There are a number of ways to sum by the values that can be used in pySpark. Let
 # reduceByKey is more efficient / scalable, and doesnt need a lambda function. Use the add method with reduceByKey()
 
 from operator import add
-
-
-# Code here 
-
+pairedRDD.reduceByKey(add).collect()
 
 # [('b', 1), ('a', 3)]
 ```
